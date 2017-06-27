@@ -1,0 +1,4 @@
+praw==4.5.1
+prawcore==0.10.1
+discord.py==0.16.8
+async-timeout==1.2.1
