@@ -1,2 +1,2 @@
 # Eecsbot
-A bot for our discord chat. Currently only posts submissions made by /u/Samses94
+A bot for our discord chat. Track comments and submissions by reddit users.
