@@ -36,7 +36,7 @@ async def reddit_checker():
             if newusersub(i):
                 for j in range(len(userinfo[i][1])):
                     await client.send_message(client.get_channel(userinfo[i][0][0]), userinfo[i][1][j])
-                await client.send_message(client.get_channel(userinfo[i][0][0]), '...........................................................')
+                await client.send_message(client.get_channel(userinfo[i][0][0]), '......................................................................................................................')
         await asyncio.sleep(60)
 
 @client.event
@@ -51,7 +51,7 @@ Then they came for Pre-med and I did not speak out because I didn't want to be a
 Then they came for Pre-Haas and I did not speak out because I had no interest in business
 Finally they came for me and the rest of the EECS majors were too socially awkward to speak for me''']#im a horrible person
         await client.send_message(message.channel, choice(eecs_copypasta))
-    elif 'cs' in message.content and 'meme' in str(message.channel):
+    elif 'cs' in message.content.lower() and 'meme' in str(message.channel):
         cs_copypasta = '''I'd just like to interject for a moment. What you're referring to as CS is actually EE+CS or as I've recently taken to calling it, EECS. CS is not a field all to itself but rather a subdivision of computing theory only made practical by advancements in digital circuitry. Many people today study CS without recognizing its roots in digital logic and signal processing.Through a particular turn of events, the most direct means of interaction most students have with computers today is through programming, and so many are not aware of the fundamental role of electrical engineering in designing them.
 There really is a CS and these people are majoring in it, but it is just another layer on top of a more nuanced view of computing. CS is the theory of computation: the field dealing with abstract algorithms and data structures necessary to implement certain logic. CS is a necessary field, but its mathematical theory is useless by itself; it can only be put into practice with the help of microchips designed by electrical engineers to transform analog signals into discrete logic. Practical CS is normally reliant upon on a computer built upon layers and layers of circuitry. The whole field is basically CS built on top of EE, or EECS. All the so-called CS majors are really abstracted EE majors.'''
         await client.send_message(message.channel, cs_copypasta)
