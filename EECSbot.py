@@ -1,9 +1,10 @@
-import discord, asyncio, praw, os, psycopg2, urlparse
+import discord, asyncio, praw, os, psycopg2
+from urllib.parse import urlparse
 from random import choice
 from discord.ext import commands
 
-reddit = praw.Reddit(client_id='ZBOaap1b2HZmkg',
-                     client_secret='0IrpKpbgokcqv91ykb_Ae1jlcbk',
+reddit = praw.Reddit(client_id=os.environ.get('rclientid'),
+                     client_secret=os.environ.get('rclientsecret'),
                      user_agent='Reddit Scraper for DiscordBot v 0.1 by /u/theeashman')
 client = commands.Bot(description='EecsBot for EECSQuarter Discord Chat', command_prefix='>')
 
@@ -91,4 +92,4 @@ async def on_ready():
     await client.change_presence(game=discord.Game(name='>help for help'))
 
 client.loop.create_task(reddit_checker())
-client.run('MzI4NzQ2MjU1NjMzMjE5NTg1.DDIakg.azQAmtp1SS4E76QpGUZs2ZMxMYM')
+client.run(os.environ.get('dtoken'))
