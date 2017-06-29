@@ -1,4 +1,4 @@
-import discord, asyncio, praw
+import discord, asyncio, praw, os, psycopg2, urlparse
 from random import choice
 from discord.ext import commands
 
@@ -6,6 +6,9 @@ reddit = praw.Reddit(client_id='ZBOaap1b2HZmkg',
                      client_secret='0IrpKpbgokcqv91ykb_Ae1jlcbk',
                      user_agent='Reddit Scraper for DiscordBot v 0.1 by /u/theeashman')
 client = commands.Bot(description='EecsBot for EECSQuarter Discord Chat', command_prefix='>')
+
+urlparse.uses_netloc.append("postgres")
+url = urlparse.urlparse(os.environ["DATABASE_URL"])
 
 userinfo = []
 
@@ -62,6 +65,22 @@ async def tracking(msg):
     for entry in userinfo:
         if(entry[0][3]) == msg.message.server.id:
             await client.say('Tracking ' + entry[0][1] + ' by ' + entry[0][2])
+            
+def getTableInfo():
+	conn = psycopg2.connect(
+		database=url.path[1:],
+		user=url.username,
+		password=url.password,
+		host=url.hostname,
+		port=url.port
+	)
+
+	cur = conn.cursor()
+	cur.execute("SELECT table_schema,table_name FROM information_schema.tables;")
+	sqlResult = cur.fetchone()
+	cur.close()
+	conn.close()
+	return sqlResult
 
 @client.event
 async def on_ready():
