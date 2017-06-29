@@ -1,5 +1,5 @@
 import discord, asyncio, praw, os, psycopg2
-#from urllib.parse import urlparse
+import urllib.parse as urlparse
 from random import choice
 from discord.ext import commands
 
@@ -8,8 +8,8 @@ reddit = praw.Reddit(client_id=os.environ.get('rclientid'),
                      user_agent='Reddit Scraper for DiscordBot v 0.1 by /u/theeashman')
 client = commands.Bot(description='EecsBot for EECSQuarter Discord Chat', command_prefix='>')
 
-#urlparse.uses_netloc.append("postgres")
-#url = urlparse.urlparse(os.environ["DATABASE_URL"])
+urlparse.uses_netloc.append("postgres")
+url = urlparse.urlparse(os.environ["DATABASE_URL"])
 
 userinfo = []
 
@@ -72,25 +72,25 @@ async def tracking(msg):
         if(entry[0][3]) == msg.message.server.id:
             await client.say('Tracking ' + entry[0][1] + ' by ' + entry[0][2])
 	
-# @client.command(description='Prints debugging info containing sql schema and table', pass_context=True)
-# async def sqlinfo(msg):
-# 	await client.say(getTableInfo())
-#
-# def getTableInfo():
-# 	conn = psycopg2.connect(
-# 		database=url.path[1:],
-# 		user=url.username,
-# 		password=url.password,
-# 		host=url.hostname,
-# 		port=url.port
-# 	)
-#
-# 	cur = conn.cursor()
-# 	cur.execute("SELECT table_schema,table_name FROM information_schema.tables;")
-# 	sqlResult = cur.fetchone()
-# 	cur.close()
-# 	conn.close()
-# 	return sqlResult
+@client.command(description='Prints debugging info containing sql schema and table', pass_context=True)
+async def sqlinfo(msg):
+	await client.say(getTableInfo())
+
+def getTableInfo():
+	conn = psycopg2.connect(
+		database=url.path[1:],
+		user=url.username,
+		password=url.password,
+		host=url.hostname,
+		port=url.port
+	)
+
+	cur = conn.cursor()
+	cur.execute("SELECT table_schema,table_name FROM information_schema.tables;")
+	sqlResult = cur.fetchone()
+	cur.close()
+	conn.close()
+	return sqlResult
 
 @client.event
 async def on_ready():
