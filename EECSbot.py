@@ -13,9 +13,6 @@ url = urlparse.urlparse(os.environ["DATABASE_URL"])
 
 userinfo = []
 
-tarray = os.environ.get('testarray')
-print(type(tarray))
-
 def newusersub(index):
     if userinfo[index][0][1] == 'submissions':
         for submission in reddit.redditor(userinfo[index][0][2]).submissions.new(limit=1):
