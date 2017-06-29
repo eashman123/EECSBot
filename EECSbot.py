@@ -29,7 +29,7 @@ def newsub(index):
             else:
                 return False
     if userinfo[index][0][1] == 'subreddit':
-        for submission in reddit.subreddit(userinfo[index][0][2]).top('day', limit=1):
+        for submission in reddit.subreddit(userinfo[index][0][2]).hot(limit=1):
             if userinfo[index][1][0] != submission.title:
                 userinfo[index][1] = [submission.title, submission.url, 'Continue the Discussion: ' + submission.shortlink]
                 return True  # this part is a hacky fix so that it doesnt keep resending the message, because im lazy.
@@ -72,7 +72,7 @@ async def addtrack(msg, targetname:str, reddittype:str):
             await client.say('Tracking ' + targetname + '\'s ' + reddittype)
         else:
             await client.say('Error: Unable to Track')
-    except discord.ext.commands.errors.MissingRequiredArgument:
+    except:
         await client.say('You did not enter valid arguements. Type ">addtrack help" for help')
 
 @client.command(description='Remove a Reddit Track', pass_context=True)
@@ -99,8 +99,8 @@ async def tracking(msg):
             if (entry[0][3]) == msg.message.server.id:
                 counter += 1
                 await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1])
-        if counter == 0 and 'all' not in msg.message.content:
-            await client.say('There are no tracks in this server')
+    if counter == 0 and 'all' not in msg.message.content:
+        await client.say('There are no tracks in this server')
 
 @client.command(description='Prints debugging info containing sql schema and table', pass_context=True)
 async def sqlinfo(msg, statement:str):
