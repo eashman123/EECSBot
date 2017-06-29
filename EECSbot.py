@@ -65,6 +65,10 @@ async def tracking(msg):
     for entry in userinfo:
         if(entry[0][3]) == msg.message.server.id:
             await client.say('Tracking ' + entry[0][1] + ' by ' + entry[0][2])
+	
+@client.command(description='Prints debugging info containing sql schema and table', pass_context=True)
+async def sqlinfo(msg):
+	await client.say(getTableInfo())
             
 def getTableInfo():
 	conn = psycopg2.connect(
