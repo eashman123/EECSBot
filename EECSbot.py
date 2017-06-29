@@ -72,7 +72,7 @@ async def addtrack(msg, targetname:str, reddittype:str):
             await client.say('Tracking ' + targetname + '\'s ' + reddittype)
         else:
             await client.say('Error: Unable to Track')
-    except:
+    except discord.ext.commands.errors.MissingRequiredArgument:
         await client.say('You did not enter valid arguements. Type ">addtrack help" for help')
 
 @client.command(description='Remove a Reddit Track', pass_context=True)
@@ -83,21 +83,24 @@ async def removetrack(msg, targetname:str, reddittype:str):
             if (entry[0] == [msg.message.channel.id, reddittype, targetname, msg.message.server.id]):
                 counter += 1
                 userinfo.remove(entry)
-                await client.say('Removed ' + reddittype + 'track of ' + targetname + 'in #' + str(client.get_channel(msg.message.channel.id)))
+                await client.say('Removed ' + reddittype + ' track of ' + targetname + ' in #' + str(client.get_channel(msg.message.channel.id)))
         if counter == 0:
             await client.say('There was no track matching your arguements.')
-    except:
+    except discord.ext.commands.errors.MissingRequiredArgument:
         await client.say('You did not enter valid arguements. Type ">removetrack help" for help')
 
 @client.command(description='Returns name of redditor and their attribute being tracked.', pass_context=True)
 async def tracking(msg):
     counter = 0
     for entry in userinfo:
-        if (entry[0][3]) == msg.message.server.id:
-            counter += 1
-            await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1])
-    if counter == 0:
-        await client.say('There are no tracks in this server')
+        if 'all' in msg.message.content:
+            await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1] + ' in channel, server ' + entry[0][0] + ', ' + entry[0][3])
+        else:
+            if (entry[0][3]) == msg.message.server.id:
+                counter += 1
+                await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1])
+        if counter == 0 and 'all' not in msg.message.content:
+            await client.say('There are no tracks in this server')
 
 @client.command(description='Prints debugging info containing sql schema and table', pass_context=True)
 async def sqlinfo(msg, statement:str):
