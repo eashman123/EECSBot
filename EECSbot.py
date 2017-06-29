@@ -29,12 +29,14 @@ def newsub(index):
             else:
                 return False
     if userinfo[index][0][1] == 'subreddit':
-        for submission in reddit.subreddit(userinfo[index][0][2]).hot(limit=1):
-            if userinfo[index][1][0] != submission.title:
-                userinfo[index][1] = [submission.title, submission.url, 'Continue the Discussion: ' + submission.shortlink]
-                return True  # this part is a hacky fix so that it doesnt keep resending the message, because im lazy.
-            else:
-                return False
+        for submission in reddit.subreddit(userinfo[index][0][2]).hot(limit=3):
+            if not(submission.stickied):
+                if userinfo[index][1][0] != submission.title:
+                    userinfo[index][1] = [submission.title, submission.url,
+                                          'Continue the Discussion: ' + submission.shortlink]
+                    return True  # this part is a hacky fix so that it doesnt keep resending the message, because im lazy.
+                else:
+                    return False
 
 async def reddit_checker():
     await client.wait_until_ready()
