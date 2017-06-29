@@ -5,15 +5,15 @@ from discord.ext import commands
 
 reddit = praw.Reddit(client_id=os.environ.get('rclientid'),
                      client_secret=os.environ.get('rclientsecret'),
-                     user_agent='Reddit Scraper for DiscordBot v 0.1 by /u/theeashman')
-client = commands.Bot(description='EecsBot for EECSQuarter Discord Chat', command_prefix='>')
+                     user_agent='Reddit Scraper for DiscordBot v.1 by /u/theeashman')
+client = commands.Bot(description='Reddit Tracker Bot for Discord', command_prefix='>')
 
 urlparse.uses_netloc.append("postgres")
 url = urlparse.urlparse(os.environ["DATABASE_URL"])
 
 userinfo = []
 
-def newusersub(index):
+def newsub(index):
     if userinfo[index][0][1] == 'submissions':
         for submission in reddit.redditor(userinfo[index][0][2]).submissions.new(limit=1):
             if userinfo[index][1][0] != submission.title:
@@ -28,12 +28,19 @@ def newusersub(index):
                 return True  # this part is a hacky fix so that it doesnt keep resending the message, because im lazy.
             else:
                 return False
+    if userinfo[index][0][1] == 'subreddit':
+        for submission in reddit.subreddit(userinfo[index][0][2]).top('day', limit=1):
+            if userinfo[index][1][0] != submission.title:
+                userinfo[index][1] = [submission.title, submission.url, 'Continue the Discussion: ' + submission.shortlink]
+                return True  # this part is a hacky fix so that it doesnt keep resending the message, because im lazy.
+            else:
+                return False
 
 async def reddit_checker():
     await client.wait_until_ready()
     while not client.is_closed:
         for i in range(len(userinfo)):
-            if newusersub(i):
+            if newsub(i):
                 for j in range(len(userinfo[i][1])):
                     await client.send_message(client.get_channel(userinfo[i][0][0]), userinfo[i][1][j])
                 await client.send_message(client.get_channel(userinfo[i][0][0]), '......................................................................................................................')
@@ -57,40 +64,62 @@ There really is a CS and these people are majoring in it, but it is just another
         await client.send_message(message.channel, cs_copypasta)
     await client.process_commands(message)
 
-@client.command(description='Track comments or submissions by redditor. Defaults to submissions.', pass_context=True)
-async def addredditor(msg, username:str, reddittype:str):
-    if 'comment' in reddittype:
-        reddittype='comments'
-    else:
-        reddittype='submissions'
-    await client.say('I will now track ' + reddittype + ' by ' + username)
-    userinfo.append([[msg.message.channel.id, reddittype, username, msg.message.server.id],[2]])
+@client.command(description='Creates a Track of a user\'s comments, submissions, or a subreddit', pass_context=True)
+async def addtrack(msg, targetname:str, reddittype:str):
+    try:
+        if reddittype == 'comments' or reddittype == 'submissions' or reddittype == 'subreddit':
+            userinfo.append([[msg.message.channel.id, reddittype, targetname, msg.message.server.id], [2]])
+            await client.say('Tracking ' + targetname + '\'s ' + reddittype)
+        else:
+            await client.say('Error: Unable to Track')
+    except:
+        await client.say('You did not enter valid arguements. Type ">addtrack help" for help')
+
+@client.command(description='Remove a Reddit Track', pass_context=True)
+async def removetrack(msg, targetname:str, reddittype:str):
+    try:
+        counter = 0
+        for entry in userinfo:
+            if (entry[0] == [msg.message.channel.id, reddittype, targetname, msg.message.server.id]):
+                counter += 1
+                userinfo.remove(entry)
+                await client.say('Removed ' + reddittype + 'track of ' + targetname + 'in ' + str(client.get_channel(msg.message.channel.id)))
+        if counter == 0:
+            await client.say('There was no track matching your arguements.')
+    except:
+        await client.say('You did not enter valid arguements. Type ">removetrack help" for help')
 
 @client.command(description='Returns name of redditor and their attribute being tracked.', pass_context=True)
 async def tracking(msg):
+    counter = 0
     for entry in userinfo:
-        if(entry[0][3]) == msg.message.server.id:
-            await client.say('Tracking ' + entry[0][1] + ' by ' + entry[0][2])
-	
+        if (entry[0][3]) == msg.message.server.id:
+            counter += 1
+            await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1])
+    if counter == 0:
+        await client.say('There are no tracks in this server')
+
 @client.command(description='Prints debugging info containing sql schema and table', pass_context=True)
 async def sqlinfo(msg, statement:str):
-	await client.say(getTableInfo(statement))
+    try:
+        await client.say(getTableInfo(statement))
+    except:
+        await client.say('Something is fucked bro')
 
 def getTableInfo(command):
-	conn = psycopg2.connect(
-		database=url.path[1:],
-		user=url.username,
-		password=url.password,
-		host=url.hostname,
-		port=url.port
-	)
-
-	cur = conn.cursor()
-	cur.execute(command)
-	sqlResult = cur.fetchone()
-	cur.close()
-	conn.close()
-	return sqlResult
+    conn = psycopg2.connect(
+        database=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port
+    )
+    cur = conn.cursor()
+    cur.execute(command)
+    sqlResult = cur.fetchone()
+    cur.close()
+    conn.close()
+    return sqlResult
 
 @client.event
 async def on_ready():
