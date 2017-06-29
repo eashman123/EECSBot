@@ -83,7 +83,7 @@ async def removetrack(msg, targetname:str, reddittype:str):
             if (entry[0] == [msg.message.channel.id, reddittype, targetname, msg.message.server.id]):
                 counter += 1
                 userinfo.remove(entry)
-                await client.say('Removed ' + reddittype + 'track of ' + targetname + 'in ' + str(client.get_channel(msg.message.channel.id)))
+                await client.say('Removed ' + reddittype + 'track of ' + targetname + 'in #' + str(client.get_channel(msg.message.channel.id)))
         if counter == 0:
             await client.say('There was no track matching your arguements.')
     except:
