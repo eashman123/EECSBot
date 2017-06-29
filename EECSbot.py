@@ -73,10 +73,10 @@ async def tracking(msg):
             await client.say('Tracking ' + entry[0][1] + ' by ' + entry[0][2])
 	
 @client.command(description='Prints debugging info containing sql schema and table', pass_context=True)
-async def sqlinfo(msg):
-	await client.say(getTableInfo())
+async def sqlinfo(msg, statement:str):
+	await client.say(getTableInfo(statement))
 
-def getTableInfo():
+def getTableInfo(command):
 	conn = psycopg2.connect(
 		database=url.path[1:],
 		user=url.username,
@@ -86,7 +86,7 @@ def getTableInfo():
 	)
 
 	cur = conn.cursor()
-	cur.execute("SELECT table_schema,table_name FROM information_schema.tables;")
+	cur.execute(command)
 	sqlResult = cur.fetchone()
 	cur.close()
 	conn.close()
