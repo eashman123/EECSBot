@@ -15,9 +15,10 @@ url = urlparse.urlparse(os.environ["DATABASE_URL"])
 userinfo = []
 
 def userinfo_restore():#this is only till we get postresql working, since the backups have to be loaded manually
-    userinfo_temp=os.environ.get('backup').split(';')
-    for entry in userinfo_temp:
-        userinfo.append(literal_eval(entry))
+    if os.environ.get('backup') != None:
+        userinfo_temp=os.environ.get('backup').split(';')
+        for entry in userinfo_temp:
+            userinfo.append(literal_eval(entry))
 
 def getTableInfo(command):
     conn = psycopg2.connect(
