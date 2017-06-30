@@ -14,6 +14,23 @@ url = urlparse.urlparse(os.environ["DATABASE_URL"])
 
 userinfo = []
 
+try:
+    conn = psycopg2.connect(
+        database=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT tracks FROM backup")
+    for i in range(cur.rowcount):
+        userinfo.append(cur.fetchone())
+    cur.close()
+    conn.close()
+except:
+    pass
+
 def getTableInfo(command):
     conn = psycopg2.connect(
         database=url.path[1:],
@@ -29,7 +46,7 @@ def getTableInfo(command):
     conn.close()
     return sqlResult
 
-def runSQLCommand(command, value):
+def runSQLCommand(command, val):
     con = psycopg2.connect(
         database=url.path[1:],
         user=url.username,
@@ -38,7 +55,7 @@ def runSQLCommand(command, value):
         port=url.port
     )
     cur=con.cursor()
-    cur.execute(command, (value, ))
+    cur.execute(command, (val, ))
     con.commit()
     cur.close()
     con.close()
@@ -98,7 +115,7 @@ There really is a CS and these people are majoring in it, but it is just another
 @client.command(description='Creates a Track of a user\'s comments, submissions, or a subreddit', pass_context=True)
 async def addtrack(msg, targetname:str, reddittype:str):
     if reddittype == 'comments' or reddittype == 'submissions' or reddittype == 'subreddit':
-        info=[[msg.message.channel.id, reddittype, targetname, msg.message.server.id], ['placeholder', 'another one', 'and anothe one']]
+        info=[[str(msg.message.channel.id), reddittype, targetname, str(msg.message.server.id)], ['placeholder', 'another one', 'and anothe one']]
         userinfo.append(info)
         runSQLCommand("INSERT INTO backup (tracks) VALUES (%s)", info)
         await client.say('Tracking ' + targetname + '\'s ' + reddittype)
@@ -141,22 +158,7 @@ async def on_ready():
     await client.change_presence(game=discord.Game(name='>help for help'))
 
 
-try:
-    conn = psycopg2.connect(
-        database=url.path[1:],
-        user=url.username,
-        password=url.password,
-        host=url.hostname,
-        port=url.port
-    )
-    cur = conn.cursor()
-    cur.execute("SELECT tracks FROM backup")
-    for i in range(cur.rowcount):
-        userinfo.append(cur.fetchone())
-    cur.close()
-    conn.close()
-except:
-    pass
+
 
 client.loop.create_task(reddit_checker())
 client.run(os.environ.get('dtoken'))
