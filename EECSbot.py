@@ -115,7 +115,7 @@ async def tracking(msg):
             await client.say('Load this into the "backup" environment value')
             return
         elif 'all' in msg.message.content:
-            await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1] + ' in channel, server ' + client.get_channel(entry[0][0]) + ', ' + client.get_server(entry[0][3]))
+            await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1] + ' in channel, server ' + str(client.get_channel(entry[0][0])) + ', ' + str(client.get_server(entry[0][3])))
         elif (entry[0][3]) == msg.message.server.id:
             counter += 1
             await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1])
