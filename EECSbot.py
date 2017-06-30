@@ -115,7 +115,7 @@ There really is a CS and these people are majoring in it, but it is just another
 @client.command(description='Creates a Track of a user\'s comments, submissions, or a subreddit', pass_context=True)
 async def addtrack(msg, targetname:str, reddittype:str):
     if reddittype == 'comments' or reddittype == 'submissions' or reddittype == 'subreddit':
-        info=[[str(msg.message.channel.id), reddittype, targetname, str(msg.message.server.id)], ['placeholder', 'another one', 'and anothe one']]
+        info=[[str(msg.message.channel.id), reddittype, targetname, str(msg.message.server.id)], ['placeholder', 'another one', 'and anothe one', 'heres one more']]
         userinfo.append(info)
         runSQLCommand("INSERT INTO backup (tracks) VALUES (%s)", info)
         await client.say('Tracking ' + targetname + '\'s ' + reddittype)
