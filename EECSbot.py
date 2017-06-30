@@ -29,7 +29,7 @@ def getTableInfo(command):
     conn.close()
     return sqlResult
 
-def runSQLCommand(command):
+def runSQLCommand(command, value):
     con = psycopg2.connect(
         database=url.path[1:],
         user=url.username,
@@ -38,7 +38,7 @@ def runSQLCommand(command):
         port=url.port
     )
     cur=con.cursor()
-    cur.execute(command)
+    cur.execute(command, (value, ))
     con.commit()
     cur.close()
     con.close()
@@ -100,7 +100,7 @@ async def addtrack(msg, targetname:str, reddittype:str):
     if reddittype == 'comments' or reddittype == 'submissions' or reddittype == 'subreddit':
         info=[[msg.message.channel.id, reddittype, targetname, msg.message.server.id], [2]]
         userinfo.append(info)
-        runSQLCommand("INSERT INTO backup (tracks) VALUES (%s)", (info, ))
+        runSQLCommand("INSERT INTO backup (tracks) VALUES (%s)", info)
         await client.say('Tracking ' + targetname + '\'s ' + reddittype)
     else:
         await client.say('Error: Unable to Track')
@@ -112,7 +112,7 @@ async def removetrack(msg, targetname:str, reddittype:str):
         if (entry[0] == [msg.message.channel.id, reddittype, targetname, msg.message.server.id]):
             counter += 1
             userinfo.remove(entry)
-            runSQLCommand("DELETE FROM backup WHERE tracks = %s", (entry, ))
+            runSQLCommand("DELETE FROM backup WHERE tracks = %s", entry)
             await client.say('Removed ' + reddittype + ' track of ' + targetname + ' in #' + str(client.get_channel(msg.message.channel.id)))
     if counter == 0:
         await client.say('There was no track matching your arguements.')
