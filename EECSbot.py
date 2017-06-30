@@ -2,6 +2,7 @@ import discord, asyncio, praw, os, psycopg2
 import urllib.parse as urlparse
 from random import choice
 from discord.ext import commands
+from ast import literal_eval #the uses of eval(), without the dangers. Wont actually run any code input through it.
 
 reddit = praw.Reddit(client_id=os.environ.get('rclientid'),
                      client_secret=os.environ.get('rclientsecret'),
@@ -12,6 +13,26 @@ urlparse.uses_netloc.append("postgres")
 url = urlparse.urlparse(os.environ["DATABASE_URL"])
 
 userinfo = []
+
+def userinfo_restore():#this is only till we get postresql working, since the backups have to be loaded manually
+    userinfo_temp=os.environ.get('backup').split(';')
+    for entry in userinfo_temp:
+        userinfo.append(literal_eval(entry))
+
+def getTableInfo(command):
+    conn = psycopg2.connect(
+        database=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port
+    )
+    cur = conn.cursor()
+    cur.execute(command)
+    sqlResult = cur.fetchone()
+    cur.close()
+    conn.close()
+    return sqlResult
 
 def newsub(index):
     if userinfo[index][0][1] == 'submissions':
@@ -32,8 +53,7 @@ def newsub(index):
         for submission in reddit.subreddit(userinfo[index][0][2]).hot(limit=3):
             if not(submission.stickied):
                 if userinfo[index][1][0] != submission.title:
-                    userinfo[index][1] = [submission.title, submission.url,
-                                          'Continue the Discussion: ' + submission.shortlink]
+                    userinfo[index][1] = [submission.title, submission.url, 'Continue the Discussion: ' + submission.shortlink]
                     return True  # this part is a hacky fix so that it doesnt keep resending the message, because im lazy.
                 else:
                     return False
@@ -68,39 +88,36 @@ There really is a CS and these people are majoring in it, but it is just another
 
 @client.command(description='Creates a Track of a user\'s comments, submissions, or a subreddit', pass_context=True)
 async def addtrack(msg, targetname:str, reddittype:str):
-    try:
-        if reddittype == 'comments' or reddittype == 'submissions' or reddittype == 'subreddit':
-            userinfo.append([[msg.message.channel.id, reddittype, targetname, msg.message.server.id], [2]])
-            await client.say('Tracking ' + targetname + '\'s ' + reddittype)
-        else:
-            await client.say('Error: Unable to Track')
-    except:
-        await client.say('You did not enter valid arguements. Type ">addtrack help" for help')
+    if reddittype == 'comments' or reddittype == 'submissions' or reddittype == 'subreddit':
+        userinfo.append([[msg.message.channel.id, reddittype, targetname, msg.message.server.id], [2]])
+        await client.say('Tracking ' + targetname + '\'s ' + reddittype)
+    else:
+        await client.say('Error: Unable to Track')
 
 @client.command(description='Remove a Reddit Track', pass_context=True)
 async def removetrack(msg, targetname:str, reddittype:str):
-    try:
-        counter = 0
-        for entry in userinfo:
-            if (entry[0] == [msg.message.channel.id, reddittype, targetname, msg.message.server.id]):
-                counter += 1
-                userinfo.remove(entry)
-                await client.say('Removed ' + reddittype + ' track of ' + targetname + ' in #' + str(client.get_channel(msg.message.channel.id)))
-        if counter == 0:
-            await client.say('There was no track matching your arguements.')
-    except discord.ext.commands.errors.MissingRequiredArgument:
-        await client.say('You did not enter valid arguements. Type ">removetrack help" for help')
+    counter = 0
+    for entry in userinfo:
+        if (entry[0] == [msg.message.channel.id, reddittype, targetname, msg.message.server.id]):
+            counter += 1
+            userinfo.remove(entry)
+            await client.say('Removed ' + reddittype + ' track of ' + targetname + ' in #' + str(client.get_channel(msg.message.channel.id)))
+    if counter == 0:
+        await client.say('There was no track matching your arguements.')
 
 @client.command(description='Returns name of redditor and their attribute being tracked.', pass_context=True)
 async def tracking(msg):
     counter = 0
     for entry in userinfo:
-        if 'all' in msg.message.content:
-            await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1] + ' in channel, server ' + entry[0][0] + ', ' + entry[0][3])
-        else:
-            if (entry[0][3]) == msg.message.server.id:
-                counter += 1
-                await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1])
+        if 'master' in msg.message.content:
+            await client.say(';'.join(str(entry) for entry in userinfo))
+            await client.say('Load this into the "backup" environment value')
+            return
+        elif 'all' in msg.message.content:
+            await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1] + ' in channel, server ' + client.get_channel(entry[0][0]) + ', ' + client.get_server(entry[0][3]))
+        elif (entry[0][3]) == msg.message.server.id:
+            counter += 1
+            await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1])
     if counter == 0 and 'all' not in msg.message.content:
         await client.say('There are no tracks in this server')
 
@@ -111,24 +128,10 @@ async def sqlinfo(msg, statement:str):
     except:
         await client.say('Something is fucked bro')
 
-def getTableInfo(command):
-    conn = psycopg2.connect(
-        database=url.path[1:],
-        user=url.username,
-        password=url.password,
-        host=url.hostname,
-        port=url.port
-    )
-    cur = conn.cursor()
-    cur.execute(command)
-    sqlResult = cur.fetchone()
-    cur.close()
-    conn.close()
-    return sqlResult
-
 @client.event
 async def on_ready():
     await client.change_presence(game=discord.Game(name='>help for help'))
 
+userinfo_restore()
 client.loop.create_task(reddit_checker())
 client.run(os.environ.get('dtoken'))
