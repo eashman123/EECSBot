@@ -129,7 +129,8 @@ async def removetrack(msg, targetname:str, reddittype:str):
         if (entry[0] == [msg.message.channel.id, reddittype, targetname, msg.message.server.id]):
             counter += 1
             userinfo.remove(entry)
-            runSQLCommand("DELETE FROM backup WHERE tracks = %s", entry)
+            data_unique=[[entry[0]], ['placeholder', 'another one', 'and anothe one', 'heres one more']]
+            runSQLCommand("DELETE FROM backup WHERE tracks = %s", data_unique)
             await client.say('Removed ' + reddittype + ' track of ' + targetname + ' in #' + str(client.get_channel(msg.message.channel.id)))
     if counter == 0:
         await client.say('There was no track matching your arguements.')
