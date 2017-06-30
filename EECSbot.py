@@ -110,11 +110,7 @@ async def removetrack(msg, targetname:str, reddittype:str):
 async def tracking(msg):
     counter = 0
     for entry in userinfo:
-        if 'master' in msg.message.content:
-            await client.say(';'.join(str(entry) for entry in userinfo))
-            await client.say('Load this into the "backup" environment value')
-            return
-        elif 'all' in msg.message.content:
+        if 'all' in msg.message.content:
             await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1] + ' in channel, server ' + str(client.get_channel(entry[0][0])) + ', ' + str(client.get_server(entry[0][3])))
         elif (entry[0][3]) == msg.message.server.id:
             counter += 1
