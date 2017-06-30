@@ -14,12 +14,6 @@ url = urlparse.urlparse(os.environ["DATABASE_URL"])
 
 userinfo = []
 
-def userinfo_restore():#this is only till we get postresql working, since the backups have to be loaded manually
-    if os.environ.get('backup') != None:
-        userinfo_temp=os.environ.get('backup').split(';')
-        for entry in userinfo_temp:
-            userinfo.append(literal_eval(entry))
-
 def getTableInfo(command):
     conn = psycopg2.connect(
         database=url.path[1:],
@@ -34,6 +28,20 @@ def getTableInfo(command):
     cur.close()
     conn.close()
     return sqlResult
+
+def runSQLCommand(command):
+    con = psycopg2.connect(
+        database=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port
+    )
+    cur=con.cursor()
+    cur.execute(command)
+    con.commit()
+    cur.close()
+    con.close()
 
 def newsub(index):
     if userinfo[index][0][1] == 'submissions':
@@ -90,7 +98,9 @@ There really is a CS and these people are majoring in it, but it is just another
 @client.command(description='Creates a Track of a user\'s comments, submissions, or a subreddit', pass_context=True)
 async def addtrack(msg, targetname:str, reddittype:str):
     if reddittype == 'comments' or reddittype == 'submissions' or reddittype == 'subreddit':
-        userinfo.append([[msg.message.channel.id, reddittype, targetname, msg.message.server.id], [2]])
+        info=[[msg.message.channel.id, reddittype, targetname, msg.message.server.id], [2]]
+        userinfo.append(info)
+        runSQLCommand("INSERT INTO backup (tracks) VALUES (%s)", (info, ))
         await client.say('Tracking ' + targetname + '\'s ' + reddittype)
     else:
         await client.say('Error: Unable to Track')
@@ -102,6 +112,7 @@ async def removetrack(msg, targetname:str, reddittype:str):
         if (entry[0] == [msg.message.channel.id, reddittype, targetname, msg.message.server.id]):
             counter += 1
             userinfo.remove(entry)
+            runSQLCommand("DELETE FROM backup WHERE tracks = %s", (entry, ))
             await client.say('Removed ' + reddittype + ' track of ' + targetname + ' in #' + str(client.get_channel(msg.message.channel.id)))
     if counter == 0:
         await client.say('There was no track matching your arguements.')
@@ -118,7 +129,7 @@ async def tracking(msg):
     if counter == 0 and 'all' not in msg.message.content:
         await client.say('There are no tracks in this server')
 
-@client.command(description='Prints debugging info containing sql schema and table', pass_context=True)
+@client.command(description='Prints debugging info containing sql schema and table', pass_context=True, hidden=True)
 async def sqlinfo(msg, statement:str):
     try:
         await client.say(getTableInfo(statement))
@@ -129,6 +140,23 @@ async def sqlinfo(msg, statement:str):
 async def on_ready():
     await client.change_presence(game=discord.Game(name='>help for help'))
 
-userinfo_restore()
+
+try:
+    conn = psycopg2.connect(
+        database=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT tracks FROM backup")
+    for i in range(cur.rowcount):
+        userinfo.append(cur.fetchone())
+    cur.close()
+    conn.close()
+except:
+    pass
+
 client.loop.create_task(reddit_checker())
 client.run(os.environ.get('dtoken'))
