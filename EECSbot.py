@@ -2,7 +2,6 @@ import discord, asyncio, praw, os, psycopg2
 import urllib.parse as urlparse
 from random import choice
 from discord.ext import commands
-from ast import literal_eval #the uses of eval(), without the dangers. Wont actually run any code input through it.
 
 reddit = praw.Reddit(client_id=os.environ.get('rclientid'),
                      client_secret=os.environ.get('rclientsecret'),
