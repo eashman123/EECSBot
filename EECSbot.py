@@ -5,7 +5,7 @@ from discord.ext import commands
 
 reddit = praw.Reddit(client_id=os.environ.get('rclientid'),
                      client_secret=os.environ.get('rclientsecret'),
-                     user_agent=os.environ.get('useragent')
+                     user_agent=os.environ.get('useragent'))
 client = commands.Bot(description='Reddit Tracker Bot for Discord', command_prefix='>')
 
 urlparse.uses_netloc.append("postgres")
