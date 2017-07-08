@@ -28,7 +28,9 @@ def init_connect():
         cur = conn.cursor()
         cur.execute("SELECT tracks FROM backup")
         for i in range(cur.rowcount):
-            userinfo.append(cur.fetchone()[0])
+            temp_value = cur.fetchone()[0]
+            if (temp_value[0][0] != None):
+                userinfo.append(temp_value)
         cur.close()
         conn.close()
     except:
