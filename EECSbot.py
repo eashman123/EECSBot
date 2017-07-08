@@ -28,12 +28,9 @@ def init_connect():
         cur = conn.cursor()
         cur.execute("SELECT tracks FROM backup")
         for i in range(cur.rowcount):
-            temp_value = cur.fetchone()[0]
-            if (temp_value[0][0] != None):
-                userinfo.append(temp_value)
+            userinfo.append(cur.fetchone()[0])
         cur.close()
         conn.close()
-        print(userinfo)
     except:
         if count <= 10: #try at least 10 times to establish connection
             init_connect()
@@ -98,11 +95,14 @@ async def reddit_checker():
     await client.wait_until_ready()
     while not client.is_closed:
         for i in range(len(userinfo)):
-            if newsub(i):
-                for j in range(len(userinfo[i][1])):
-                    await client.send_message(client.get_channel(userinfo[i][0][0]), userinfo[i][1][j])
-                await client.send_message(client.get_channel(userinfo[i][0][0]), '......................................................................................................................')
-        await asyncio.sleep(60)
+            try:
+                if newsub(i):
+                    for j in range(len(userinfo[i][1])):
+                        await client.send_message(client.get_channel(userinfo[i][0][0]), userinfo[i][1][j])
+                    await client.send_message(client.get_channel(userinfo[i][0][0]), '......................................................................................................................')
+            except:
+                pass
+        await asyncio.sleep(15)
 
 @client.event
 async def on_message(message):
