@@ -30,10 +30,10 @@ def init_connect():
         for i in range(cur.rowcount):
             temp_value = cur.fetchone()[0]
             if (temp_value[0][0] != None):
-                print(temp_value[0][0])
                 userinfo.append(temp_value)
         cur.close()
         conn.close()
+        print(userinfo)
     except:
         if count <= 10: #try at least 10 times to establish connection
             init_connect()
