@@ -1,5 +1,4 @@
-praw==4.5.1
-prawcore==0.10.1
+praw==5.0.0
 discord.py==0.16.8
 async-timeout==1.2.1
 psycopg2==2.7.1
