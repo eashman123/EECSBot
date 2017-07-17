@@ -173,7 +173,7 @@ async def on_ready():
 
 
 init_connect()
-for i in userinfo:
+for i in range(len(userinfo)):
     newsub(i)
 client.loop.create_task(reddit_checker())
 client.run(os.environ.get('dtoken'))
