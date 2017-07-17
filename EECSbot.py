@@ -11,7 +11,7 @@ client = commands.Bot(description='Reddit Tracker Bot for Discord', command_pref
 urlparse.uses_netloc.append("postgres")
 url = urlparse.urlparse(os.environ["DATABASE_URL"])
 
-userinfo = []
+subscriptions = []
 
 count=0
 def init_connect():
@@ -27,8 +27,11 @@ def init_connect():
         )
         cur = conn.cursor()
         cur.execute("SELECT tracks FROM backup")
+        
+        
         for i in range(cur.rowcount):
-            userinfo.append(cur.fetchone()[0])
+            subscriptions.append(createtrack(cur.fetchone()[0]))
+    
         cur.close()
         conn.close()
     except:
@@ -67,39 +70,100 @@ def runSQLCommand(command, val):
     cur.close()
     con.close()
 
-def newsub(index):
-    if userinfo[index][0][1] == 'submissions':
-        for submission in reddit.redditor(userinfo[index][0][2]).submissions.new(limit=1):
-            if userinfo[index][1][0] != submission.title:
-                userinfo[index][1] = [submission.title, submission.url, 'Continue the Discussion: ' + submission.shortlink]
-                return True  # this part is a hacky fix so that it doesnt keep resending the message, because im lazy.
-            else:
-                return False
-    if userinfo[index][0][1] == 'comments':
-        for comment in reddit.redditor(userinfo[index][0][2]).comments.new(limit=1):
-            if userinfo[index][1][0] != 'By ' + str(comment.author) + ' in ' + str(comment.subreddit):
-                userinfo[index][1] = ['By ' + str(comment.author) + ' in ' + str(comment.subreddit), str(comment.body), 'Reply: https://reddit.com' + str(comment.permalink(fast=False))]
-                return True  # this part is a hacky fix so that it doesnt keep resending the message, because im lazy.
-            else:
-                return False
-    if userinfo[index][0][1] == 'subreddit':
-        for submission in reddit.subreddit(userinfo[index][0][2]).hot(limit=3):
-            if not(submission.stickied):
-                if userinfo[index][1][0] != submission.title:
-                    userinfo[index][1] = [submission.title, submission.url, 'Continue the Discussion: ' + submission.shortlink]
-                    return True  # this part is a hacky fix so that it doesnt keep resending the message, because im lazy.
-                else:
-                    return False
+class subscription:
+    def __init__(self, tracking, channel, server):
+        self.tracking = tracking
+        self.channel = channel
+        self.server = server
+        self.type = None
+    
+    def latestsub(self):
+        raise NotImplementedError()
+
+class usersubmission(subscription):
+    
+    def __init__(self, tracking, channel, server):
+        super().__init__(tracking, channel, server)
+        self.title = None
+        self.url = None
+        self.shortlink = None
+        self.type = 'submissions'
+    
+    def formatted(self):
+        return [self.title, self.url, 'Continue the Discussion: ' + self.shortlink]
+        
+    def latestsub(self):
+        for submission in reddit.redditor(self.tracking).submissions.new(limit=1):
+            if self.title != submission.title:
+                self.title = submission.title
+                self.url = submission.url
+                self.shortlink = submission.shortlink
+                return self.formatted()
+        return False
+                
+class usercomment(subscription):
+    
+    def __init__(self, tracking, channel, server):
+        super().__init__(tracking, channel, server)
+        self.author = None
+        self.subreddit = None
+        self.body = None
+        self.permalink = None
+        self.type = 'comments'
+    
+    def formatted(self):
+        return ['By ' + self.author + ' in ' + self.subreddit, self.body, 'Reply: https://reddit.com' + self.permalink]
+        
+    def latestsub(self):
+        for comment in reddit.redditor(self.tracking).comments.new(limit=1):
+            if self.permalink != str(comment.permalink(fast=False)):
+                self.author = str(comment.author)
+                self.subreddit = str(comment.subreddit)
+                self.body = str(comment.body)
+                self.permalink = str(comment.permalink(fast=False))
+                return self.formatted()
+        return False
+
+class subredditsubmission(subscription):
+    
+    def __init__(self, tracking, channel, server):
+        super().__init__(tracking, channel, server)
+        self.title = None
+        self.url = None
+        self.shortlink = None
+        self.type = 'subreddit'
+    
+    def formatted(self):
+        return [self.title, self.url, 'Continue the Discussion: ' + self.shortlink]
+        
+    def latestsub(self):
+        for submission in reddit.subreddit(self.tracking).hot(limit=3):
+            if self.title != submission.title:
+                self.title = submission.title
+                self.url = submission.url
+                self.shortlink = submission.shortlink
+                return self.formatted()
+        return False
+        
+        
+def createtrack(sqlrow):
+    if sqlrow[0][1] == 'comments':
+        return usercomment(sqlrow[0][2],sqlrow[0][0], sqlrow[0][3])
+    if sqlrow[0][1] == 'submissions':
+        return usersubmission(sqlrow[0][2],sqlrow[0][0], sqlrow[0][3])
+    if sqlrow[0][1] == 'subreddit':
+        return subredditsubmission(sqlrow[0][2],sqlrow[0][0], sqlrow[0][3])
+        
 
 async def reddit_checker():
     await client.wait_until_ready()
     while not client.is_closed:
-        for i in range(len(userinfo)):
+        for sub in subscriptions:
             try:
-                if newsub(i):
-                    for j in range(len(userinfo[i][1])):
-                        await client.send_message(client.get_channel(userinfo[i][0][0]), userinfo[i][1][j])
-                    await client.send_message(client.get_channel(userinfo[i][0][0]), '......................................................................................................................')
+                latest = sub.latestsub()
+                if (latest):
+                    [await client.send_message(client.get_channel(sub.channel), msg) for msg in latest]
+                    await client.send_message(client.get_channel(sub.channel), '——————————————————————————————————————————————————————')
             except:
                 pass
         await asyncio.sleep(15)
@@ -128,7 +192,8 @@ There really is a CS and these people are majoring in it, but it is just another
 async def addtrack(msg, targetname:str, reddittype:str):
     if reddittype == 'comments' or reddittype == 'submissions' or reddittype == 'subreddit':
         info=[[str(msg.message.channel.id), reddittype, targetname, str(msg.message.server.id)], ['placeholder', 'another one', 'and anothe one', 'heres one more']]
-        userinfo.append(info)
+        
+        subscriptions.append(createtrack(info))
         runSQLCommand("INSERT INTO backup (tracks) VALUES (%s)", info)
         await client.say('Tracking ' + targetname + '\'s ' + reddittype)
     else:
@@ -137,10 +202,10 @@ async def addtrack(msg, targetname:str, reddittype:str):
 @client.command(description='Remove a Reddit Track', pass_context=True)
 async def removetrack(msg, targetname:str, reddittype:str):
     counter = 0
-    for entry in userinfo:
-        if (entry[0] == [msg.message.channel.id, reddittype, targetname, msg.message.server.id]):
+    for entry in subscriptions:
+        if entry.tracking == targetname and entry.type == reddittype:
             counter += 1
-            userinfo.remove(entry)
+            subscriptions.remove(entry)
             data_unique=[entry[0], ['placeholder', 'another one', 'and anothe one', 'heres one more']]
             runSQLCommand("DELETE FROM backup WHERE tracks = %s", data_unique)
             await client.say('Removed ' + reddittype + ' track of ' + targetname + ' in #' + str(client.get_channel(msg.message.channel.id)))
@@ -150,12 +215,12 @@ async def removetrack(msg, targetname:str, reddittype:str):
 @client.command(description='Returns name of redditor and their attribute being tracked.', pass_context=True)
 async def tracking(msg):
     counter = 0
-    for entry in userinfo:
+    for entry in subscriptions:
         if 'all' in msg.message.content:
-            await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1] + ' in channel, server ' + str(client.get_channel(entry[0][0])) + ', ' + str(client.get_server(entry[0][3])))
-        elif (entry[0][3]) == msg.message.server.id:
+            await client.say('Tracking ' + entry.tracking + '\'s ' + entry.type + ' in channel, server ' + entry.channel + ', ' + entry.server)
+        elif entry.server == msg.message.server.id:
             counter += 1
-            await client.say('Tracking ' + entry[0][2] + '\'s ' + entry[0][1])
+            await client.say('Tracking ' + entry.tracking + '\'s ' + entry.type)
     if counter == 0 and 'all' not in msg.message.content:
         await client.say('There are no tracks in this server')
 
@@ -165,15 +230,20 @@ async def sqlinfo(msg, statement:str):
         await client.say(getTableInfo(statement))
     except:
         await client.say('Something is fucked bro')
+        
+@client.command(description='Eval your python code', pass_context=True, hidden=True)
+async def debugeval(msg, statement:str):
+    try:
+        await client.say(eval(statement))
+    except Exception as e: 
+        await client.say(e)
 
 @client.event
 async def on_ready():
     await client.change_presence(game=discord.Game(name='>help for help'))
 
 
-
 init_connect()
-for i in range(len(userinfo)):
-    newsub(i)
+[sub.latestsub() for sub in subscriptions]
 client.loop.create_task(reddit_checker())
 client.run(os.environ.get('dtoken'))
