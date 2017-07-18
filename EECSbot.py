@@ -91,6 +91,7 @@ class usersubmission(subscription):
     
     def formatted(self):
         em = discord.embed(title=self.title,  url=self.url, color=0xDEADBF)
+        em.set_author(name='Discussion by '+self.tracking, url=self.shortlink)
         return em
         
     def latestsub(self):
@@ -114,7 +115,7 @@ class usercomment(subscription):
         self.type = 'comments'
     
     def formatted(self):
-        em = discord.Embed(title=self.rootsubmission.title, description=self.body, color=0xDEADBF)
+        em = discord.Embed(title=self.rootsubmission.title, description=self.body, url=rootsubmission.shortlink, color=0xDEADBF)
         em.set_footer('in ' + self.subreddit)
         em.set_author(name=self.author)
         return em
@@ -170,7 +171,6 @@ async def reddit_checker():
                 latest = sub.latestsub()
                 if (latest):
                     await client.send_message(client.get_channel(sub.channel), embed=latest)
-                    await client.send_message(client.get_channel(sub.channel), '——————————————————————————————————————————————————————')
             except:
                 pass
         await asyncio.sleep(15)
