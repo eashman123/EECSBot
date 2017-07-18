@@ -123,15 +123,15 @@ class usercomment(subscription):
         self.type = 'comments'
     
     async def printformatted(self):
-        print ('test')
+
         em = discord.Embed(title=None, description=self.body, color=0xDEADBF)
         em.set_footer(text='in ' + self.subreddit)
         em.set_author(name=self.rootsubmission.title, url=self.rootsubmission.shortlink)
 
-        em._provider = {
-            'url': str(self.permalink),
-            'name': str(self.tracking)
-        }
+        # em._provider = {
+        #     'url': str(self.permalink),
+        #     'name': str(self.tracking)
+        # }
 
         await client.send_message(client.get_channel(self.channel), embed=em)
         
