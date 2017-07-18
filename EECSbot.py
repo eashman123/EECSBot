@@ -115,9 +115,9 @@ class usercomment(subscription):
         self.type = 'comments'
     
     def formatted(self):
-        em = discord.Embed(title=self.rootsubmission.title, description=self.body, url=self.rootsubmission.shortlink, color=0xDEADBF)
+        em = discord.Embed(title=self.rootsubmission.title, description=self.body, color=0xDEADBF)
         em.set_footer(text='in ' + self.subreddit)
-        em.set_author(name=self.author)
+        em.set_author(name=self.author, url=self.rootsubmission.shortlink)
         return em
         
     def latestsub(self):
