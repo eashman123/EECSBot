@@ -180,7 +180,7 @@ async def reddit_checker():
         for sub in subscriptions:
             try:
                 if (sub.latestsub()):
-                    sub.printformatted()
+                    await sub.printformatted()
             except:
                 pass
         await asyncio.sleep(15)
