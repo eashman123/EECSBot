@@ -183,8 +183,8 @@ async def reddit_checker():
             try:
                 if (sub.latestsub()):
                     await sub.printformatted()
-            except:
-                pass
+            except Exception as e:
+                await client.say(e)
         await asyncio.sleep(15)
 
 @client.event
