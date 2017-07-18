@@ -242,7 +242,7 @@ async def sqlinfo(msg, statement:str):
 async def debugeval(msg, statement:str):
     try:
        #await client.say(eval(statement))
-        await client.say(client.get_message(channel=306599926492692491,id=336526339345612801).embeds)
+        await client.say(await client.get_message(channel=306599926492692491,id=336526339345612801).embeds)
     except Exception as e: 
         await client.say(e)
 
