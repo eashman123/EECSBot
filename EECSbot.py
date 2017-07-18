@@ -87,8 +87,8 @@ class usersubmission(subscription):
         self.url = None
         self.shortlink = None
         self.type = 'submissions'
-    
-    def printformatted(self):                       
+
+    async def printformatted(self):                       
         message = await client.send_message(client.get_channel(sub.channel), sub.url)
         await asyncio.sleep(4)
         discordembed = message.embeds[0]
@@ -97,7 +97,7 @@ class usersubmission(subscription):
         em.set_author(name=discordembed.title, url=discordembed.url)
 
         em._provider = {
-            'url': str(self.shortlink)
+            'url': str(self.shortlink),
             'name': str(self.tracking)
         }
 
@@ -122,13 +122,13 @@ class usercomment(subscription):
         self.rootsubmission = None
         self.type = 'comments'
     
-    def printformatted(self):
+    async def printformatted(self):
         em = discord.Embed(title=None, description=self.body, color=0xDEADBF)
         em.set_footer(text='in ' + self.subreddit)
         em.set_author(name=self.rootsubmission.title, url=self.rootsubmission.shortlink)
 
         em._provider = {
-            'url': str(self.url)
+            'url': str(self.url),
             'name': str(self.tracking)
         }
 
@@ -153,7 +153,7 @@ class subredditsubmission(subscription):
         self.shortlink = None
         self.type = 'subreddit'
     
-    def formatted(self):
+    async def printformatted(self):
         em = discord.Embed(title=self.title,  url=self.url, color=0xDEADBF)
         await client.send_message(client.get_channel(self.channel), embed=em)
         
