@@ -81,7 +81,6 @@ class subscription:
         raise NotImplementedError()
 
 class usersubmission(subscription):
-    
     def __init__(self, tracking, channel, server):
         super().__init__(tracking, channel, server)
         self.title = None
@@ -89,10 +88,20 @@ class usersubmission(subscription):
         self.shortlink = None
         self.type = 'submissions'
     
-    def formatted(self):
-        em = discord.Embed(title=self.title,  url=self.url, color=0xDEADBF)
-        em.set_author(name='Discussion by '+self.tracking, url=self.shortlink)
-        return em
+    def printformatted(self):                       
+        message = await client.send_message(client.get_channel(sub.channel), sub.url)
+        await asyncio.sleep(4)
+        discordembed = message.embeds[0]
+
+        em = discord.Embed(description=self.title, thumbnail=discordembed.thumbnail, color=0xDEADBF)
+        em.set_author(name=discordembed.title, url=discordembed.url)
+
+        em._provider = {
+            'url': str(self.shortlink)
+            'name': str(self.tracking)
+        }
+
+        await client.edit_message(message, new_content=None, embed=em)
         
     def latestsub(self):
         for submission in reddit.redditor(self.tracking).submissions.new(limit=1):
@@ -100,11 +109,10 @@ class usersubmission(subscription):
                 self.title = submission.title
                 self.url = submission.url
                 self.shortlink = submission.shortlink
-                return self.formatted()
+                return True
         return False
                 
 class usercomment(subscription):
-    
     def __init__(self, tracking, channel, server):
         super().__init__(tracking, channel, server)
         self.author = None
@@ -114,11 +122,17 @@ class usercomment(subscription):
         self.rootsubmission = None
         self.type = 'comments'
     
-    def formatted(self):
-        em = discord.Embed(title=self.rootsubmission.title, description=self.body, color=0xDEADBF)
+    def printformatted(self):
+        em = discord.Embed(title=None, description=self.body, color=0xDEADBF)
         em.set_footer(text='in ' + self.subreddit)
-        em.set_author(name=self.author, url=self.rootsubmission.shortlink)
-        return em
+        em.set_author(name=self.rootsubmission.title, url=self.rootsubmission.shortlink)
+
+        em._provider = {
+            'url': str(self.url)
+            'name': str(self.tracking)
+        }
+
+        await client.send_message(client.get_channel(self.channel), embed=em)
         
     def latestsub(self):
         for comment in reddit.redditor(self.tracking).comments.new(limit=1):
@@ -128,11 +142,10 @@ class usercomment(subscription):
                 self.body = str(comment.body)
                 self.permalink = str(comment.permalink(fast=False))
                 self.rootsubmission = comment.submission
-                return self.formatted()
+                return True
         return False
 
 class subredditsubmission(subscription):
-    
     def __init__(self, tracking, channel, server):
         super().__init__(tracking, channel, server)
         self.title = None
@@ -142,7 +155,7 @@ class subredditsubmission(subscription):
     
     def formatted(self):
         em = discord.Embed(title=self.title,  url=self.url, color=0xDEADBF)
-        return em
+        await client.send_message(client.get_channel(self.channel), embed=em)
         
     def latestsub(self):
         for submission in reddit.subreddit(self.tracking).hot(limit=3):
@@ -150,10 +163,9 @@ class subredditsubmission(subscription):
                 self.title = submission.title
                 self.url = submission.url
                 self.shortlink = submission.shortlink
-                return self.formatted()
+                return True
         return False
-        
-        
+           
 def createtrack(sqlrow):
     if sqlrow[0][1] == 'comments':
         return usercomment(sqlrow[0][2],sqlrow[0][0], sqlrow[0][3])
@@ -162,19 +174,13 @@ def createtrack(sqlrow):
     if sqlrow[0][1] == 'subreddit':
         return subredditsubmission(sqlrow[0][2],sqlrow[0][0], sqlrow[0][3])
         
-
 async def reddit_checker():
     await client.wait_until_ready()
     while not client.is_closed:
         for sub in subscriptions:
             try:
-                latest = sub.latestsub()
-                if (latest):
-                    #message = await client.send_message(client.get_channel(sub.channel), embed=latest)
-                    message = await client.send_message(client.get_channel(sub.channel), sub.url)
-                    await asyncio.sleep(4)
-                    print(message)
-                    print(message.embeds)
+                if (sub.latestsub()):
+                    sub.printformatted()
             except:
                 pass
         await asyncio.sleep(15)
