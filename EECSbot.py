@@ -94,8 +94,8 @@ class usersubmission(subscription):
         print(len(message.embeds))
         discordembed = message.embeds
 
-        em = discord.Embed(description=self.title, thumbnail=discordembed.thumbnail, color=0xDEADBF)
-        em.set_author(name=discordembed.title, url=discordembed.url)
+        em = discord.Embed(description=self.title, thumbnail=discordembed['thumbnail'], color=0xDEADBF)
+        em.set_author(name=discordembed['title'], url=discordembed['url'])
 
         em._provider = {
             'url': str(self.shortlink),
@@ -125,14 +125,16 @@ class usercomment(subscription):
     
     async def printformatted(self):
 
-        em = discord.Embed(title=None, description=self.body, color=0xDEADBF)
-        em.set_footer(text='in ' + self.subreddit)
-        em.set_author(name=self.rootsubmission.title, url=self.rootsubmission.shortlink)
-
-        em._provider = {
+        pr = {
             'url': 'https://reddit.com' + str(self.permalink),
             'name': str(self.tracking)
         }
+
+        em = discord.Embed(title=None, description=self.body, provider=discord.EmbedProxy(pr), color=0xDEADBF)
+        em.set_footer(text='in ' + self.subreddit)
+        em.set_author(name=self.rootsubmission.title, url=self.rootsubmission.shortlink)
+
+        print(em)        
 
         await client.send_message(client.get_channel(self.channel), embed=em)
         
