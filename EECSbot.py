@@ -90,10 +90,10 @@ class usersubmission(subscription):
 
     async def printformatted(self):                       
         message = await client.send_message(client.get_channel(self.channel), self.url)
-        await asyncio.sleep(4)
-        discordembed = await client.get_message(client.get_channel(self.channel), message.id)
-        print(len(discordembed))
-        discordembed = discordembed[0]
+        await asyncio.sleep(5)
+        message = await client.get_message(client.get_channel(self.channel), message.id)
+        print(len(message.embeds))
+        discordembed = message.embeds[0]
 
         em = discord.Embed(description=self.title, type=discordembed['type'], thumbnail=discordembed['thumbnail'], color=0xDEADBF)
         em.set_author(name=discordembed['title'], url=discordembed['url'])
