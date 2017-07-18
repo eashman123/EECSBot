@@ -95,7 +95,7 @@ class usersubmission(subscription):
         print(len(message.embeds))
         discordembed = message.embeds[0]
 
-        em = discord.Embed(description=self.title, type=discordembed['type'], thumbnail=discordembed['thumbnail'], color=0xDEADBF)
+        em = discord.Embed(description=self.title, type='article', thumbnail=discordembed['thumbnail'], color=0xDEADBF)
         em._thumbnail = discordembed['thumbnail']
         em.set_author(name=discordembed['title'], url=discordembed['url'])
         em._provider = {
