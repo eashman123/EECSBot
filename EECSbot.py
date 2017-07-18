@@ -95,17 +95,18 @@ class usersubmission(subscription):
         print(len(message.embeds))
         discordembed = message.embeds[0]
 
-        em = discord.Embed(description=self.title, type=discordembed['type'], thumbnail=discordembed['thumbnail'], color=0xDEADBF)
-        em.set_author(name=discordembed['title'], url=discordembed['url'])
+        # em = discord.Embed(description=self.title, type=discordembed['type'], thumbnail=discordembed['thumbnail'], color=0xDEADBF)
+        # em.set_author(name=discordembed['title'], url=discordembed['url'])
 
-        print(discordembed['thumbnail'])
+        # print(discordembed['thumbnail'])
 
-        em._provider = {
-            'url': str(self.shortlink),
-            'name': str(self.tracking)
-        }
+        # em._provider = {
+        #     'url': str(self.shortlink),
+        #     'name': str(self.tracking)
+        # }
 
-        await client.edit_message(message, new_content='', embed=em)
+
+        await client.send_message(client.get_channel(self.channel), embed=discordembed)
         
     def latestsub(self):
         for submission in reddit.redditor(self.tracking).submissions.new(limit=1):
