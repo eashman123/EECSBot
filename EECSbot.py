@@ -92,7 +92,7 @@ class usersubmission(subscription):
         message = await client.send_message(client.get_channel(self.channel), self.url)
         await asyncio.sleep(4)
         print(len(message.embeds))
-        discordembed = message.embeds
+        discordembed = message.embeds[0]
 
         em = discord.Embed(description=self.title, thumbnail=discordembed['thumbnail'], color=0xDEADBF)
         em.set_author(name=discordembed['title'], url=discordembed['url'])
@@ -130,7 +130,7 @@ class usercomment(subscription):
             'name': str(self.tracking)
         }
 
-        em = discord.Embed(title=None, description=self.body, provider=discord.EmbedProxy(pr), color=0xDEADBF)
+        em = discord.Embed(title=None, description=self.body, provider=pr, color=0xDEADBF)
         em.set_footer(text='in ' + self.subreddit)
         em.set_author(name=self.rootsubmission.title, url=self.rootsubmission.shortlink)
 
