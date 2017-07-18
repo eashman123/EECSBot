@@ -254,5 +254,5 @@ init_connect()
 [sub.latestsub() for sub in subscriptions]
 client.loop.create_task(reddit_checker())
 client.run(os.environ.get('dtoken'))
-print (client.get_message(channel=306599926492692491,id=336526339345612801).nonce)
-asdfasdf = client.get_message(channel=306599926492692491,id=336526339345612801).embeds
+asdf = await client.get_message(channel=306599926492692491,id=336526339345612801).nonce
+asdfasdf = await client.get_message(channel=306599926492692491,id=336526339345612801).embeds
