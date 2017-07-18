@@ -90,20 +90,17 @@ class usersubmission(subscription):
 
     async def printformatted(self):                       
         message = await client.send_message(client.get_channel(self.channel), self.url)
-        await asyncio.sleep(5)
+        await asyncio.sleep(4)
         message = await client.get_message(client.get_channel(self.channel), message.id)
         print(len(message.embeds))
         discordembed = message.embeds[0]
 
-        em = discord.Embed(description=self.title, type='article', thumbnail=discordembed['thumbnail'], color=0xDEADBF)
-        em._thumbnail = discordembed['thumbnail']
+        em = discord.Embed(description=self.title, color=0xDEADBF)
         em.set_author(name=discordembed['title'], url=discordembed['url'])
-        em._provider = {
-            'url': str(self.shortlink),
-            'name': str(self.tracking)
-        }
+        if (discordembed['thumbnail']['url']):
+            em.set_image(url=discordembed['thumbnail']['url'])
 
-
+        await client.delete_message(message)
         await client.send_message(client.get_channel(self.channel), embed=em)
         
     def latestsub(self):
