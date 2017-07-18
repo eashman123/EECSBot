@@ -132,6 +132,8 @@ class usercomment(subscription):
             'name': str(self.tracking)
         }
 
+        print (em)
+
         await client.send_message(client.get_channel(self.channel), embed=em)
         
     def latestsub(self):
