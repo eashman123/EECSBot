@@ -94,15 +94,17 @@ class usersubmission(subscription):
         print(len(message.embeds))
         discordembed = message.embeds[0]
 
-        em = discord.Embed(description=self.title, thumbnail=discordembed['thumbnail'], color=0xDEADBF)
+        em = discord.Embed(description=self.title, type=discordembed['type'], thumbnail=discordembed['thumbnail'], color=0xDEADBF)
         em.set_author(name=discordembed['title'], url=discordembed['url'])
+
+        print(discordembed['thumbnail'])
 
         em._provider = {
             'url': str(self.shortlink),
             'name': str(self.tracking)
         }
 
-        await client.edit_message(message, new_content=None, embed=em)
+        await client.edit_message(message, new_content='', embed=em)
         
     def latestsub(self):
         for submission in reddit.redditor(self.tracking).submissions.new(limit=1):
@@ -124,13 +126,7 @@ class usercomment(subscription):
         self.type = 'comments'
     
     async def printformatted(self):
-
-        pr = {
-            'url': 'https://reddit.com' + str(self.permalink),
-            'name': str(self.tracking)
-        }
-
-        em = discord.Embed(title=None, description=self.body, provider=pr, color=0xDEADBF)
+        em = discord.Embed(title=None, description=self.body, color=0xDEADBF)
         em.set_footer(text='in ' + self.subreddit)
         em.set_author(name=self.rootsubmission.title, url=self.rootsubmission.shortlink)
 
