@@ -241,9 +241,11 @@ async def sqlinfo(msg, statement:str):
 @client.command(description='Eval your python code', pass_context=True, hidden=True)
 async def debugeval(msg, statement:str):
     try:
-        await client.say(eval(statement))
+       #await client.say(eval(statement))
+        await client.say(client.get_message(channel=306599926492692491,id=336526339345612801).embeds)
     except Exception as e: 
         await client.say(e)
+
 
 @client.event
 async def on_ready():
@@ -254,5 +256,3 @@ init_connect()
 [sub.latestsub() for sub in subscriptions]
 client.loop.create_task(reddit_checker())
 client.run(os.environ.get('dtoken'))
-asdf = await client.get_message(channel=306599926492692491,id=336526339345612801).nonce
-asdfasdf = await client.get_message(channel=306599926492692491,id=336526339345612801).embeds
