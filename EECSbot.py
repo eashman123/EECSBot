@@ -89,7 +89,7 @@ class usersubmission(subscription):
         self.type = 'submissions'
 
     async def printformatted(self):                       
-        message = await client.send_message(client.get_channel(sub.channel), sub.url)
+        message = await client.send_message(client.get_channel(self.channel), self.url)
         await asyncio.sleep(4)
         discordembed = message.embeds[0]
 
@@ -129,11 +129,9 @@ class usercomment(subscription):
         em.set_author(name=self.rootsubmission.title, url=self.rootsubmission.shortlink)
 
         em._provider = {
-            'url': str(self.url),
+            'url': str(self.permalink),
             'name': str(self.tracking)
         }
-
-        print (em)
 
         await client.send_message(client.get_channel(self.channel), embed=em)
         
@@ -183,7 +181,6 @@ async def reddit_checker():
         for sub in subscriptions:
             try:
                 if (sub.latestsub()):
-                    print('printing now')
                     await sub.printformatted()
             except Exception as e:
                 print(e)
