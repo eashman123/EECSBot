@@ -163,7 +163,9 @@ def createtrack(sqlrow):
         return subredditsubmission(sqlrow[0][2],sqlrow[0][0], sqlrow[0][3])
         
 
+message
 async def reddit_checker():
+    global message
     await client.wait_until_ready()
     while not client.is_closed:
         for sub in subscriptions:
@@ -173,7 +175,7 @@ async def reddit_checker():
                     #message = await client.send_message(client.get_channel(sub.channel), embed=latest)
                     message = await client.send_message(client.get_channel(sub.channel), sub.url)
                     await asyncio.sleep(4)
-                    client.say(message.embeds)
+                    await client.say(message.embeds)
             except:
                 pass
         await asyncio.sleep(15)
