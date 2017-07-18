@@ -122,7 +122,8 @@ class usercomment(subscription):
         self.rootsubmission = None
         self.type = 'comments'
     
-    def printformatted(self):
+    async def printformatted(self):
+        print ('test')
         em = discord.Embed(title=None, description=self.body, color=0xDEADBF)
         em.set_footer(text='in ' + self.subreddit)
         em.set_author(name=self.rootsubmission.title, url=self.rootsubmission.shortlink)
@@ -182,8 +183,9 @@ async def reddit_checker():
         for sub in subscriptions:
             try:
                 if (sub.latestsub()):
+                    print('printing now')
                     await client.say('printing now')
-                    sub.printformatted()
+                    await sub.printformatted()
             except Exception as e:
                 await client.say(e)
         await asyncio.sleep(15)
