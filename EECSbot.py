@@ -90,7 +90,8 @@ class usersubmission(subscription):
         self.type = 'submissions'
     
     def formatted(self):
-        return [self.title, self.url, 'Continue the Discussion: ' + self.shortlink]
+        em = discord.embed(title=self.title,  url=self.url, color=0xDEADBF)
+        return em
         
     def latestsub(self):
         for submission in reddit.redditor(self.tracking).submissions.new(limit=1):
@@ -109,10 +110,14 @@ class usercomment(subscription):
         self.subreddit = None
         self.body = None
         self.permalink = None
+        self.rootsubmission = None
         self.type = 'comments'
     
     def formatted(self):
-        return ['By ' + self.author + ' in ' + self.subreddit, self.body, 'Reply: https://reddit.com' + self.permalink]
+        em = discord.Embed(title=self.rootsubmission.title, description=self.body, color=0xDEADBF)
+        em.set_footer('in ' + self.subreddit)
+        em.set_author(name=self.author)
+        return em
         
     def latestsub(self):
         for comment in reddit.redditor(self.tracking).comments.new(limit=1):
@@ -121,6 +126,7 @@ class usercomment(subscription):
                 self.subreddit = str(comment.subreddit)
                 self.body = str(comment.body)
                 self.permalink = str(comment.permalink(fast=False))
+                self.rootsubmission = comment.submission
                 return self.formatted()
         return False
 
@@ -134,7 +140,8 @@ class subredditsubmission(subscription):
         self.type = 'subreddit'
     
     def formatted(self):
-        return [self.title, self.url, 'Continue the Discussion: ' + self.shortlink]
+        em = discord.embed(title=self.title,  url=self.url, color=0xDEADBF)
+        return em
         
     def latestsub(self):
         for submission in reddit.subreddit(self.tracking).hot(limit=3):
@@ -162,7 +169,7 @@ async def reddit_checker():
             try:
                 latest = sub.latestsub()
                 if (latest):
-                    [await client.send_message(client.get_channel(sub.channel), msg) for msg in latest]
+                    await client.send_message(client.get_channel(sub.channel), embed=latest)
                     await client.send_message(client.get_channel(sub.channel), '——————————————————————————————————————————————————————')
             except:
                 pass
