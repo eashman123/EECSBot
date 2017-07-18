@@ -237,12 +237,15 @@ async def sqlinfo(msg, statement:str):
         await client.say(getTableInfo(statement))
     except:
         await client.say('Something is fucked bro')
-        
+
+asdfasdf = None
 @client.command(description='Eval your python code', pass_context=True, hidden=True)
 async def debugeval(msg, statement:str):
+    global asdfasdf
     try:
        #await client.say(eval(statement))
         message = await client.get_message(channel=306599926492692491,id=336526339345612801)
+        asdfasdf = message.embeds
         await client.say(message.embeds)
     except Exception as e: 
         await client.say(e)
