@@ -90,15 +90,26 @@ class usersubmission(subscription):
 
     async def printformatted(self):                       
         message = await client.send_message(client.get_channel(self.channel), self.url)
-        await asyncio.sleep(4)
-        message = await client.get_message(client.get_channel(self.channel), message.id)
+
+        counter = 0
+        while len(message.embeds) == 0:
+            await asyncio.sleep(4)
+            message = await client.get_message(client.get_channel(self.channel), message.id)
+            counter = counter + 1
+            if counter > 3:
+                return #failure to parse message, just fail silently and hope no one notices
+
         print(len(message.embeds))
         discordembed = message.embeds[0]
 
         em = discord.Embed(description=self.title, color=0xDEADBF)
-        em.set_author(name=discordembed['title'], url=discordembed['url'])
-        if (discordembed['thumbnail']['url']):
-            em.set_image(url=discordembed['thumbnail']['url'])
+
+        if discordembed['type']=='article':
+            em.set_author(name=discordembed['title'], url=discordembed['url'])
+            if (discordembed['thumbnail']['url']):
+                em.set_image(url=discordembed['thumbnail']['url'])
+        else:
+            em.set_author(name=discordembed['author']['name'], url=discordembed['author']['url'])
 
         await client.delete_message(message)
         await client.send_message(client.get_channel(self.channel), embed=em)
@@ -124,7 +135,7 @@ class usercomment(subscription):
     
     async def printformatted(self):
         em = discord.Embed(title=None, description=self.body, color=0xDEADBF)
-        em.set_footer(text='in ' + self.subreddit)
+        em.set_footer(text='By ' + self.tracking + ' in ' + self.subreddit)
         em.set_author(name=self.rootsubmission.title, url=self.rootsubmission.shortlink)
 
         print(em)        
