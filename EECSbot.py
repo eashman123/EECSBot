@@ -90,13 +90,14 @@ class usersubmission(subscription):
 
     async def printformatted(self):                       
         message = await client.send_message(client.get_channel(self.channel), self.url)
-
+        await asyncio.sleep(4)
         counter = 0
         while len(message.embeds) == 0:
             await asyncio.sleep(4)
             message = await client.get_message(client.get_channel(self.channel), message.id)
             counter = counter + 1
-            if counter > 3:
+            if counter > 5:
+                await client.delete_message(message)
                 return #failure to parse message, just fail silently and hope no one notices
 
         print(len(message.embeds))
