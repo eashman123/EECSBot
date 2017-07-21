@@ -88,32 +88,35 @@ class usersubmission(subscription):
         self.shortlink = None
         self.type = 'submissions'
 
-    async def printformatted(self):                       
-        message = await client.send_message(client.get_channel(self.channel), self.url)
-        await asyncio.sleep(4)
-        counter = 0
-        while len(message.embeds) == 0:
+    async def printformatted(self): 
+        try:                      
+            message = await client.send_message(client.get_channel(self.channel), self.url)
             await asyncio.sleep(4)
-            message = await client.get_message(client.get_channel(self.channel), message.id)
-            counter = counter + 1
-            if counter > 5:
-                await client.delete_message(message)
-                return #failure to parse message, just fail silently and hope no one notices
+            counter = 0
+            while len(message.embeds) == 0:
+                await asyncio.sleep(4)
+                message = await client.get_message(client.get_channel(self.channel), message.id)
+                counter = counter + 1
+                if counter > 5:
+                    await client.delete_message(message)
+                    return #failure to parse message, just fail silently and hope no one notices
 
-        print(len(message.embeds))
-        discordembed = message.embeds[0]
+            print(len(message.embeds))
+            discordembed = message.embeds[0]
 
-        em = discord.Embed(description=self.title, color=0xDEADBF)
+            em = discord.Embed(description=self.title, color=0xDEADBF)
 
-        if discordembed['type']=='article':
-            em.set_author(name=discordembed['title'], url=discordembed['url'])
-            if (discordembed['thumbnail']['url']):
-                em.set_image(url=discordembed['thumbnail']['url'])
-        else:
-            em.set_author(name=discordembed['author']['name'], url=discordembed['author']['url'])
+            if discordembed['type']=='twitter':
+                em.set_author(name=discordembed['author']['name'], url=discordembed['author']['url'])
+            else:
+                em.set_author(name=discordembed['title'], url=discordembed['url'])
+                if (discordembed['thumbnail']['url']):
+                    em.set_image(url=discordembed['thumbnail']['url'])
 
-        await client.delete_message(message)
-        await client.send_message(client.get_channel(self.channel), embed=em)
+            await client.delete_message(message)
+            await client.send_message(client.get_channel(self.channel), embed=em)
+        except Exception as e:
+                print(e)
         
     def latestsub(self):
         for submission in reddit.redditor(self.tracking).submissions.new(limit=1):
