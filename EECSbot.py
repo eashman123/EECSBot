@@ -107,9 +107,12 @@ class usersubmission(subscription):
             em = discord.Embed(description=self.title, color=0xDEADBF)
 
             if discordembed['type']=='twitter':
-                em.set_author(name=discordembed['author']['name'], url=discordembed['author']['url'])
+                em.set_author(name=discordembed['author']['name'], url=self.url)
             else:
-                em.set_author(name=discordembed['title'], url=discordembed['url'])
+                if (discordembed['description'] != self.title):
+                    em.set_author(name=discordembed['title'], url=self.url)
+                else:
+                    em.set_author(name=self.title, url=self.url)
                 if (discordembed['thumbnail']['url']):
                     em.set_image(url=discordembed['thumbnail']['url'])
 
