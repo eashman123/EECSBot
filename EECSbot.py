@@ -98,11 +98,11 @@ class usersubmission(subscription):
                 message = await client.get_message(client.get_channel(self.channel), message.id)
                 counter = counter + 1
                 if counter > 5:
-                	if len(message.embeds) == 0:
-                    	await client.delete_message(message)
-                   		return #failure to parse message, just fail silently and hope no one notices
+                    if len(message.embeds) == 0:
+                        await client.delete_message(message)
+                        return #failure to parse message, just fail silently and hope no one notices
                 else:
-                	break
+                    break
 
 
             print(len(message.embeds))
