@@ -93,16 +93,21 @@ class usersubmission(subscription):
             message = await client.send_message(client.get_channel(self.channel), self.url)
             await asyncio.sleep(4)
             counter = 0
-            while len(message.embeds) == 0:
+            while len(message.embeds) == 0 or not 'thumbnail' in message.embeds[0]:
                 await asyncio.sleep(4)
                 message = await client.get_message(client.get_channel(self.channel), message.id)
                 counter = counter + 1
                 if counter > 5:
-                    await client.delete_message(message)
-                    return #failure to parse message, just fail silently and hope no one notices
+                	if len(message.embeds) == 0:
+                    	await client.delete_message(message)
+                   		return #failure to parse message, just fail silently and hope no one notices
+                else:
+                	break
+
 
             print(len(message.embeds))
             discordembed = message.embeds[0]
+            print discordembed
 
             em = discord.Embed(description=self.title, color=0xDEADBF)
 
@@ -113,7 +118,7 @@ class usersubmission(subscription):
                     em.set_author(name=discordembed['title'], url=self.url)
                 else:
                     em.set_author(name=self.title, url=self.url)
-                if (discordembed['thumbnail']['url']):
+                if ('thumbnail' in discordembed):
                     em.set_image(url=discordembed['thumbnail']['url'])
 
             await client.delete_message(message)
