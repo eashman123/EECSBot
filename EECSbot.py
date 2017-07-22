@@ -107,7 +107,7 @@ class usersubmission(subscription):
 
             print(len(message.embeds))
             discordembed = message.embeds[0]
-            print discordembed
+            print (discordembed)
 
             em = discord.Embed(description=self.title, color=0xDEADBF)
 
