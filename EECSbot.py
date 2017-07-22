@@ -245,16 +245,18 @@ async def removetrack(msg, targetname:str, reddittype:str):
         await client.say('There was no track matching your arguements.')
 
 @client.command(description='Returns name of redditor and their attribute being tracked.', pass_context=True)
-async def tracking(msg):
+async def tracking(msg, optionalparam:str=None):
     counter = 0
-    for entry in subscriptions:
-        if 'all' in msg.message.content:
+    if optionalparam==None:
+        for entry in subscriptions:
+            if entry.server == msg.message.server.id:
+                counter += 1
+                await client.say('Tracking ' + entry.tracking + '\'s ' + entry.type)
+        if counter == 0 and 'all' not in msg.message.content:
+            await client.say('There are no tracks in this server')
+    elif optionalparam=='all':
+        for entry in subscriptions:
             await client.say('Tracking ' + entry.tracking + '\'s ' + entry.type + ' in channel, server ' + entry.channel + ', ' + entry.server)
-        elif entry.server == msg.message.server.id:
-            counter += 1
-            await client.say('Tracking ' + entry.tracking + '\'s ' + entry.type)
-    if counter == 0 and 'all' not in msg.message.content:
-        await client.say('There are no tracks in this server')
 
 @client.command(description='Prints debugging info containing sql schema and table', pass_context=True, hidden=True)
 async def sqlinfo(msg, statement:str):
