@@ -128,7 +128,7 @@ class usersubmission(subscription):
 
             if 'thumbnail' in discordembed:
                 em.set_image(url=discordembed['thumbnail']['url'])
-            else if 'image' in discordembed:
+            elif 'image' in discordembed:
                 em.set_image(url=discordembed['image']['url'])
 
             await client.delete_message(message)
