@@ -93,7 +93,7 @@ class usersubmission(subscription):
             message = await client.send_message(client.get_channel(self.channel), self.url)
             await asyncio.sleep(4)
             counter = 0
-            while len(message.embeds) == 0 or not 'thumbnail' in message.embeds[0]:
+            while len(message.embeds) == 0 and (not 'thumbnail' in message.embeds[0] or not 'image' in message.embeds[0]):
                 await asyncio.sleep(4)
                 message = await client.get_message(client.get_channel(self.channel), message.id)
                 counter = counter + 1
@@ -109,17 +109,27 @@ class usersubmission(subscription):
             discordembed = message.embeds[0]
             print (discordembed)
 
-            em = discord.Embed(description=self.title, color=0xDEADBF)
+            em = None
 
-            if discordembed['type']=='twitter':
+            if discordembed['type']=='rich':
+                em = discord.Embed(description=self.title, color=0xDEADBF)
                 em.set_author(name=discordembed['author']['name'], url=self.url)
+
+                if 'footer' in discordembed:
+                    em.set_footer(text='Twitter',icon_url='https://abs.twimg.com/icons/apple-touch-icon-192x192.png')
+
             else:
-                if (discordembed['description'] != self.title):
+                if (discordembed['title'] != self.title):
+                    em = discord.Embed(description=self.title, color=0xDEADBF)
                     em.set_author(name=discordembed['title'], url=self.url)
                 else:
+                    em = discord.Embed(description=discordembed['description'], color=0xDEADBF)
                     em.set_author(name=self.title, url=self.url)
-                if ('thumbnail' in discordembed):
-                    em.set_image(url=discordembed['thumbnail']['url'])
+
+            if ('thumbnail' in discordembed):
+                em.set_image(url=discordembed['thumbnail']['url'])
+            else if ('image' in discordembed):
+                em.set_image(url=discordembed['image']['url'])
 
             await client.delete_message(message)
             await client.send_message(client.get_channel(self.channel), embed=em)
