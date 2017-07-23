@@ -93,7 +93,7 @@ class usersubmission(subscription):
             message = await client.send_message(client.get_channel(self.channel), self.url)
             await asyncio.sleep(4)
             counter = 0
-            while len(message.embeds) == 0 and (not 'thumbnail' in message.embeds[0] or not 'image' in message.embeds[0]):
+            while len(message.embeds) == 0 or (not 'thumbnail' in message.embeds[0] and not 'image' in message.embeds[0]):
                 await asyncio.sleep(4)
                 message = await client.get_message(client.get_channel(self.channel), message.id)
                 counter = counter + 1
