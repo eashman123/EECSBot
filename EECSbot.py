@@ -126,9 +126,9 @@ class usersubmission(subscription):
                     em = discord.Embed(description=discordembed['description'], color=0xDEADBF)
                     em.set_author(name=self.title, url=self.url)
 
-            if ('thumbnail' in discordembed):
+            if 'thumbnail' in discordembed:
                 em.set_image(url=discordembed['thumbnail']['url'])
-            else if ('image' in discordembed):
+            else if 'image' in discordembed:
                 em.set_image(url=discordembed['image']['url'])
 
             await client.delete_message(message)
