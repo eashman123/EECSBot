@@ -254,7 +254,7 @@ There really is a CS and these people are majoring in it, but it is just another
             dict = {'caltech': private_copy, 'stanford': private_copy, 'harvard': private_copy, 'ucla': public_copy,
                     'ucsd': public_copy}
             for matched_value in valinval(competing_colleges, message.content.lower()):
-                await client.send_message(message.channel, dict[matched_value])
+                await client.send_message(message.channel, choice(dict[matched_value]))
 
     await client.process_commands(message)
 
